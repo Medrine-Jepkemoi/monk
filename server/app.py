@@ -11,6 +11,12 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
+# INDEX ROUTE
+@app.route('/')
+def index():
+    return "MONK CLOTHING STORE"
+
+
 
 if __name__ == "__main__":
     app.run(port=5555)
