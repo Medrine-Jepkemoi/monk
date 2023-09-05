@@ -7,8 +7,8 @@ class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
     
     user_id = db.Column(db.Integer, primary_key=True)
-    firstName = db.Column(db.String, unique=True)
-    lastName = db.Column(db.String, unique=True)
+    firstName = db.Column(db.String)
+    lastName = db.Column(db.String)
     role = db.Column(db.String, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)

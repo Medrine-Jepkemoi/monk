@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
-from models import db
+from models import db, User
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -15,6 +15,53 @@ db.init_app(app)
 @app.route('/')
 def index():
     return "MONK CLOTHING STORE"
+
+# SIGNUP ROUTE
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    firstName = data.get('firstName')
+    lastName = data.get('lastName')
+    role = data.get('role')
+    email = data.get('email')
+    password = data.get('password')
+    phone_number = data.get('phone_number')
+
+    if not firstName or not lastName or not role or not email or not password or not phone_number:
+
+        response = make_response(jsonify({"error": "Please enter all the required fields"}, 400))
+        return response
+    
+    existing_user = User.query.filter_by(email=email).first()
+
+    if existing_user:
+        response = make_response(jsonify({"error": "User with the same email already exists, please use another email"}, 409))
+        return response
+    
+    newUser = User(
+        firstName = firstName,
+        lastName = lastName,
+        role = role,
+        password = password,
+        email = email,
+        phone_number = phone_number
+
+    )
+
+    db.session.add(newUser)
+    db.session.commit()
+
+    response_dict = newUser.to_dict()
+
+    response = make_response(jsonify(response_dict), 201)
+    return response
+
+
+
+    
+    
+
+
 
 
 
