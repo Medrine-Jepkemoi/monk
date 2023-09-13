@@ -29,4 +29,32 @@ class User(db.Model, SerializerMixin):
         return f'User(user_id={self.user_id}, firstName={self.firstName}, lastName={self.lastName})'
 
 
+class Product(db.Model, SerializerMixin):
+    __tablename__ = 'products'
+
+    product_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    image = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    quanity = db.Column(db.Integer, nullable=False)
+
     
+
+    def to_dict(self):
+        return {
+
+            'product_id': self.product_id,
+            'name': self.name,
+            'image': self.image,
+            'description': self.description,
+            'price': self.price,
+            'quantity': self.quantity,
+
+
+
+        }
+    
+    def __repr__(self):
+        return f'Product={self.product_id}, name={self.name})'
+     
