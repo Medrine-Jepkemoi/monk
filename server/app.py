@@ -57,13 +57,37 @@ def signup():
     return response
 
 
+# LOGIN ROUTE
+@app.route('/login', methods = ['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        response = make_response(jsonify({"error": "Please enter all the required fields"}, 400))
+        return response
+    
+    uemail = User.query.filter_by(email=email).first()
+    upassword = User.query.filter_by(password=password).first()
+
+
+    if not uemail or not upassword:
+        response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+        return response
+    
+    
+    response = make_response(jsonify({'message': 'Login successful.'}), 200)
+    return response
+
+    
+
+
+    
+
 
     
     
-
-
-
-
 
 if __name__ == "__main__":
     app.run(port=5555)
