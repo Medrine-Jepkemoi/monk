@@ -131,8 +131,8 @@ api.add_resource(Products, '/products')
 
 
 class ProductByID(Resource):
-    def get(self, id):
-        response_dict = Product.query.filter_by(id=id).first().to_dict()
+    def get(self, product_id):
+        response_dict = Product.query.filter_by(product_id=product_id).first().to_dict()
 
         response = make_response(
             jsonify(response_dict),
@@ -140,9 +140,51 @@ class ProductByID(Resource):
         )
 
         return response
+    def patch(self, product_id):
+
+        data = request.json
+        product = Product.query.filter_by(product_id=product_id).first()
+
+        if not product:
+            response = make_response(jsonify({'error': 'Product not found'}), 404)
+            return response
+        
+        if 'name' in data:
+            product.name = data['name']
+        if 'image' in data:
+            product.image = data['image']
+        if 'description' in data:
+            product.description = data['description']
+        if 'price' in data:
+            product.price = data['price']
+        if 'quantity' in data:
+            product.quantity = data['quantity']
+        if 'size' in data:
+            product.size = data['size']
+        if 'color' in data:
+            product.color = data['color']
+
+        db.session.commit()
+
+        response = make_response(jsonify(product.to_dict()), 200)
+        return response
+    
+    def delete(self, product_id):
+        product = Product.query.filter_by(product_id = product_id).first()
+
+        if not product:
+            response = make_response(jsonify({'error': 'Product not found'}), 404)
+            return response
 
 
-api.add_resource(ProductByID, '/products/<int:id>')
+        db.session.delete(product)
+        db.session.commit()
+
+        response = make_response(jsonify({'message': 'Product deleted successfully'}), 200)
+        return response
+
+
+api.add_resource(ProductByID, '/products/<int:product_id>')
 
 if __name__ == "__main__":
     app.run(port=5555)
