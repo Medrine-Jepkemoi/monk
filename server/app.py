@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_restful import Api, Resource
 
 from models import db, User, Product
+import jwt
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -15,6 +16,37 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 api = Api(app)
+
+# Token Generation
+def encode_user():
+    """
+    encode user payload as a jwt
+    :param user:
+    :return:
+    """
+    encoded_data = jwt.encode(payload={"name": "Medrine"},
+                              key='secret',
+                              algorithm="HS256"
+                              )
+
+    return encoded_data
+
+
+if __name__ == "__main__":
+    print(encode_user())
+
+# Token Verification
+def decode_user(token: str):
+    """
+    :param token: jwt token
+    :return:
+    """
+    decoded_data = jwt.decode(jwt=token,
+                              key='secret',
+                              algorithms=["HS256"])
+
+    print(decoded_data)
+
 
 # INDEX ROUTE
 
@@ -87,6 +119,29 @@ def signup():
     response = make_response(jsonify(response_dict), 201)
     return response
 
+# LOGIN ROUTE
+@app.route('/login', methods = ['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        response = make_response(jsonify({"error": "Please enter all the required fields"}, 400))
+        return response
+    
+    uemail = User.query.filter_by(email=email).first()
+    upassword = User.query.filter_by(password=password).first()
+    
+    if not uemail or not upassword:
+        response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+        return response   
+    
+    create_token = encode_user()
+    
+    response = make_response(jsonify({'message': 'Login successful.', 'access_token': create_token}), 200)
+    return response
+    
 
 # Product CRUD
 class Products(Resource):
@@ -176,7 +231,6 @@ class ProductByID(Resource):
             response = make_response(jsonify({'error': 'Product not found'}), 404)
             return response
 
-
         db.session.delete(product)
         db.session.commit()
 
@@ -184,7 +238,10 @@ class ProductByID(Resource):
         return response
 
 
+
 api.add_resource(ProductByID, '/products/<int:product_id>')
 
+
+    
 if __name__ == "__main__":
     app.run(port=5555)
