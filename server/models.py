@@ -13,8 +13,7 @@ class User(db.Model, SerializerMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     phone_number = db.Column(db.String(10), nullable=False)
-    
-    
+
     def to_dict(self):
         return{
             'user_id': self.user_id,
@@ -25,10 +24,9 @@ class User(db.Model, SerializerMixin):
             'password': self.password,
             'phone_number': self.phone_number,
         }
-        
-#The repr() function returns a printable representational string of the given object.        
+    
     def __repr__(self):
         return f'User(user_id={self.user_id}, firstName={self.firstName}, lastName={self.lastName})'
-    
+
 
     

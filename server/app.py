@@ -1,8 +1,7 @@
-from flask import Flask, request, make_response, jsonify
+from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
 from models import db, User
-from flask_restful import Api, Resource
-
+import jwt
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -10,87 +9,110 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = True
 
 migrate = Migrate(app, db)
+
 db.init_app(app)
 
-api = Api(app)
+# Token Generation
+def encode_user():
+    """
+    encode user payload as a jwt
+    :param user:
+    :return:
+    """
+    encoded_data = jwt.encode(payload={"name": "Medrine"},
+                              key='secret',
+                              algorithm="HS256"
+                              )
+
+    return encoded_data
 
 
-class Index(Resource):
-    def get(self):
-        response_dict = {
-            "index": "Welcome to MONK APPAREL, a clothing label to satisfy all your LOOKS!",
-        }
-        response = make_response(
-            jsonify(response_dict),
-            200,
-        )
-        return response
+if __name__ == "__main__":
+    print(encode_user())
+
+# Token Verification
+def decode_user(token: str):
+    """
+    :param token: jwt token
+    :return:
+    """
+    decoded_data = jwt.decode(jwt=token,
+                              key='secret',
+                              algorithms=["HS256"])
+
+    print(decoded_data)
 
 
-api.add_resource(Index, "/")
+# INDEX ROUTE
+@app.route('/')
+def index():
+    return "MONK CLOTHING STORE"
 
-
-@app.route("/signup", methods=["POST"])
+# SIGNUP ROUTE
+@app.route('/signup', methods=['POST'])
 def signup():
-    # Ensure the request has the correct Content-Type header
-    if request.headers.get("Content-Type") != "application/json":
-        response = make_response(
-            jsonify({"error": "Unsupported Media Type"}),
-            415,  # HTTP status code for Unsupported Media Type
-        )
+    data = request.json
+    firstName = data.get('firstName')
+    lastName = data.get('lastName')
+    role = data.get('role')
+    email = data.get('email')
+    password = data.get('password')
+    phone_number = data.get('phone_number')
+
+    if not firstName or not lastName or not role or not email or not password or not phone_number:
+
+        response = make_response(jsonify({"error": "Please enter all the required fields"}, 400))
         return response
-
-    # Parse the JSON data
-    try:
-        data = request.json
-    except json.JSONDecodeError:
-        response = make_response(
-            jsonify({"error": "Invalid JSON data"}),
-            400,  # HTTP status code for Bad Request
-        )
-        return response
-
-    # Rest of your signup logic
-    firstName = data.get("firstName")
-    lastName = data.get("lastName")
-    role = data.get("role")
-    email = data.get("email")
-    password = data.get("password")
-    phone_number = data.get("phone_number")
-
-    # Make sure to return a response at the end of your signup logic
-
-    if not firstName or not lastName or not email or not password or not role:
-        response = make_response(
-            jsonify({"error": "Please provide all required fields"}), 400
-        )
-        return response
-
+    
     existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        response = make_response(
-            jsonify({"error": "User with the same email already exists"}), 409
-        )
-        return response
 
-    new_user = User(
-        firstName=firstName,
-        lastName=lastName,
-        role=role,
-        email=email,
-        password=password,
-        phone_number=phone_number,
+    if existing_user:
+        response = make_response(jsonify({"error": "User with the same email already exists, please use another email"}, 409))
+        return response
+    
+    newUser = User(
+        firstName = firstName,
+        lastName = lastName,
+        role = role,
+        password = password,
+        email = email,
+        phone_number = phone_number
+
     )
 
-    db.session.add(new_user)
+    db.session.add(newUser)
     db.session.commit()
 
-    response_dict = new_user.to_dict()
+    response_dict = newUser.to_dict()
 
     response = make_response(jsonify(response_dict), 201)
     return response
 
 
+# LOGIN ROUTE
+@app.route('/login', methods = ['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        response = make_response(jsonify({"error": "Please enter all the required fields"}, 400))
+        return response
+    
+    uemail = User.query.filter_by(email=email).first()
+    upassword = User.query.filter_by(password=password).first()
+
+
+    if not uemail or not upassword:
+        response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+        return response   
+    
+    create_token = encode_user()
+    
+    response = make_response(jsonify({'message': 'Login successful.', 'access_token': create_token}), 200)
+    return response
+
+    
 if __name__ == "__main__":
     app.run(port=5555)
-
