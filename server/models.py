@@ -38,6 +38,8 @@ class Product(db.Model, SerializerMixin):
     description = db.Column(db.String(200), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    size = db.Column(db.String(200), nullable=False)
+    color = db.Column(db.String(200), nullable=False)
 
     
 
@@ -50,6 +52,8 @@ class Product(db.Model, SerializerMixin):
             'description': self.description,
             'price': self.price,
             'quantity': self.quantity,
+            'size': self.size,
+            'color': self.color,
 
         }
     

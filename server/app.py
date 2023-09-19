@@ -88,6 +88,7 @@ def signup():
     return response
 
 
+# Product CRUD
 class Products(Resource):
     def get(self):
         response_dict_list = [n.to_dict() for n in Product.query.all()]
@@ -96,14 +97,15 @@ class Products(Resource):
 
         return response
     
-    @app.route("/products", methods=["POST"])
-    def post():
+    def post(self):
         data = request.json
         name = data.get("name")
         image = data.get("image")
         description = data.get("description")
         price = data.get("price")
         quantity = data.get("quantity")
+        size = data.get("size")
+        color = data.get("color")
 
 
         newProduct = Product(
@@ -112,6 +114,8 @@ class Products(Resource):
             description=description,
             price=price,
             quantity=quantity,
+            size = size,
+            color = color,
         )
 
         db.session.add(newProduct)
