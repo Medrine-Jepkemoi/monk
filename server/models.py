@@ -37,7 +37,7 @@ class Product(db.Model, SerializerMixin):
     image = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(200), nullable=False)
     price = db.Column(db.Integer, nullable=False)
-    quanity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
 
     
 
@@ -51,10 +51,7 @@ class Product(db.Model, SerializerMixin):
             'price': self.price,
             'quantity': self.quantity,
 
-
-
         }
     
     def __repr__(self):
         return f'Product={self.product_id}, name={self.name})'
-     
