@@ -30,6 +30,7 @@ def encode_user():
 if __name__ == "__main__":
     print(encode_user())
 
+# Token Verification
 def decode_user(token: str):
     """
     :param token: jwt token
