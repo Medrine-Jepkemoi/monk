@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 
 from flask_restful import Api, Resource
 
-from models import db, User, Product
+from models import db, User, Product, Category
 import jwt
 
 app = Flask(__name__)
@@ -242,8 +242,75 @@ class ProductByID(Resource):
 api.add_resource(ProductByID, '/products/<int:product_id>')
 
 
+#Category CRUD
+class Categories(Resource):
+    def get(self):
+        response_dict_list = [n.to_dict() for n in Category.query.all()]
 
+        response = make_response(jsonify(response_dict_list), 200)
 
+        return response
     
+    def post(self):
+        data = request.json
+        name = data.get("name")
+        
+        newCategory = Category(
+            name=name,
+        )
+
+        db.session.add(newCategory)
+        db.session.commit()
+
+        response_dict = newCategory.to_dict()
+
+        response = make_response(jsonify(response_dict), 201)
+        return response
+
+
+api.add_resource(Categories, '/categories')
+
+class CategoryByID(Resource):
+    def get(self, category_id):
+        response_dict = Category.query.filter_by(category_id = category_id).first().to_dict()
+
+        response = make_response(
+            jsonify(response_dict),
+            200,
+        )
+
+        return response
+    def patch(self, category_id):
+
+        data = request.json
+        category = Category.query.filter_by(category_id = category_id).first()
+
+        if not Category:
+            response = make_response(jsonify({'error': 'Category not found'}), 404)
+            return response
+        
+        if 'name' in data:
+            category.name = data['name']
+
+        db.session.commit()
+
+        response = make_response(jsonify(category.to_dict()), 200)
+        return response
+    
+    def delete(self, category_id):
+        category = Category.query.filter_by(category_id=category_id).first()
+
+        if not category:
+            response = make_response(jsonify({'error': 'Category not found'}), 404)
+            return response
+
+        db.session.delete(category)
+        db.session.commit()
+
+        response = make_response(jsonify({'message': 'Category deleted successfully'}), 200)
+        return response
+
+api.add_resource(CategoryByID, '/categories/<int:category_id>')  
+
 if __name__ == "__main__":
     app.run(port=5555)
