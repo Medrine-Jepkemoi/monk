@@ -59,3 +59,21 @@ class Product(db.Model, SerializerMixin):
     
     def __repr__(self):
         return f'Product={self.product_id}, name={self.name})'
+    
+
+class Category(db.Model, SerializerMixin):
+    __tablename__ = 'categories'
+
+    category_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    
+    def to_dict(self):
+        return {
+
+            'category_id': self.category_id,
+            'name': self.name,
+
+        }
+    
+    def __repr__(self):
+        return f'Category={self.category_id}, name={self.name})'
